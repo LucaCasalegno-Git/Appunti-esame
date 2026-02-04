@@ -1,7 +1,15 @@
+#----------------------------------------------------------------------------------------#
+#metodo handle grafo o altri con varianti
 
 def handle_graph(self, e):
     """ Handler per gestire creazione del grafo """
-    self._model.BuildGraf()
+    try:
+        boh = float(self._view.txt_durata.value)
+    except ValueError:
+        self._view.show_alert(" ")
+        return
+
+    self._model.BuildGraph()
 
     self._view.lista_visualizzazione_1.controls.clear()
     self._view.lista_visualizzazione_1.controls.append(ft.Text(f' '))
@@ -9,10 +17,11 @@ def handle_graph(self, e):
     self._view.button.disabled = False
     self._view.update()
 
-
+#----------------------------------------------------------------------------------------#
 # Metodo per popolare i dropdown
-def populate_dd(self):
 
+def populate_dd(self):
+    #FONDAMENTALE LA KEY, LA DD RESTITUISCE UN INT E POI LO DEVI CONVERTIRE
     for year in self._model.get_year():
         self._view.dd_year.options.append(
             ft.DropdownOption(key=squadra.id, text=squadra.name))
@@ -23,7 +32,7 @@ def populate_dd(self):
 
     self._view.update()
 
-
+#----------------------------------------------------------------------------------------#
 
 #scrittura per scrivere       nodo --> nodo  peso
 for i in range(len(path) - 1):
@@ -32,7 +41,7 @@ for i in range(len(path) - 1):
     self._view.txt_risultato.controls.append(ft.Text(f"Peso totale: {weight}"))
     self._view.update()
     
-########################################################################
+#----------------------------------------------------------------------------------------#
 #PUNTO 2
 
 def handle_ricerca(self, e):

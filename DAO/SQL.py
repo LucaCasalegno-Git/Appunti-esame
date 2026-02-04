@@ -1,23 +1,3 @@
-class DAO:
-    @staticmethod
-    def get_geni():
-        conn = DBConnect.get_connection()
-
-        result = []
-
-        cursor = conn.cursor(dictionary=True)
-        query = """  """
-
-        cursor.execute(query, (   ,))
-
-        for row in cursor:
-            result.append(Obj(row['']))
-
-        cursor.close()
-        conn.close()
-        return result
-
-
 #QUERY UTILI#
 
 #Estrae coppie ordinate di entità distinte, collegate da una relazione registrata
@@ -25,8 +5,8 @@ class DAO:
 # e validi, e restituisce per ciascuna coppia un valore numerico rappresentativo
 # della loro relazione, eliminando i duplicati tramite raggruppamento.
 """SELECT g1.id AS gene1, g2.id AS gene2, i.correlazione
-                FROM gene g1, gene g2, interazione i 
-                WHERE  g1.id = i.id_gene1 and g2.id = i.id_gene2 
+                FROM gene g1, gene g2, interazione i
+                WHERE  g1.id = i.id_gene1 and g2.id = i.id_gene2
                        and g2.cromosoma != g1.cromosoma
                        and g2.cromosoma>0
                        and g1.cromosoma>0
@@ -142,3 +122,32 @@ f"""
     order by f.ORIGIN_AIRPORT_ID , f.DESTINATION_AIRPORT_ID ) t2
     on t1.ORIGIN_AIRPORT_ID = t2.DESTINATION_AIRPORT_ID and t1.DESTINATION_AIRPORT_ID = t2.ORIGIN_AIRPORT_ID
     where t1.ORIGIN_AIRPORT_ID < t1.DESTINATION_AIRPORT_ID or t2.ORIGIN_AIRPORT_ID is null"""
+
+
+#La query costruisce gli archi di un grafo orientato tra cromosomi sommando le correlazioni delle interazioni tra geni
+# appartenenti a cromosomi diversi, dopo aver eliminato sia i duplicati delle coppie di geni sia le duplicazioni dovute
+# a più occorrenze dello stesso gene.
+'''SELECT
+    g1.cromosoma AS cromosoma1,
+    g2.cromosoma AS cromosoma2,
+    SUM(t.correlazione) AS peso
+FROM (
+    -- 1) dedup coppie di geni: una sola volta per (id_gene1, id_gene2)
+    SELECT
+        id_gene1,
+        id_gene2,
+        MAX(correlazione) AS correlazione
+    FROM interazione
+    GROUP BY id_gene1, id_gene2) t
+JOIN (
+    -- 2) dedup gene -> cromosoma: una sola riga per id
+    SELECT DISTINCT id, cromosoma
+    FROM gene
+    WHERE cromosoma <> 0) g1 ON g1.id = t.id_gene1
+JOIN (
+    SELECT DISTINCT id, cromosoma
+    FROM gene
+    WHERE cromosoma <> 0) g2 ON g2.id = t.id_gene2
+WHERE g1.cromosoma <> g2.cromosoma
+GROUP BY g1.cromosoma, g2.cromosoma
+ORDER BY peso desc'''
